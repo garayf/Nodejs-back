@@ -19,21 +19,12 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 // app.use(formData.parse(options));
 
-const Dailylog = require("./src/Dailylog");
 const purchaseOrders = require("./src/purchaseOrders");
 const Leave = require("./src/leave");
 const handleFileUpload = require("./src/files");
 const processFileUpload = require("./src/processFileConnector");
 
 app.get("/", (req, res) => res.send("Server running!"));
-
-app.post("/api/daily-log", async (req, res) => {
-  res.sendStatus(200);
-
-  const body = req.body;
-  const result = await Dailylog(body?.Entry);
-  console.log(result);
-});
 
 app.post("/api/purchase-order", async (req, res) => {
   res.sendStatus(200);

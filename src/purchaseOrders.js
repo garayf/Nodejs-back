@@ -8,7 +8,7 @@ async function purchaseOrders(payload) {
   if (typeof payload !== "object") {
     return {
       status: 400,
-      message: "Issue creating timesheet.",
+      message: "Issue creating purchase order.",
       payload: payload,
     };
   }
@@ -22,10 +22,8 @@ async function purchaseOrders(payload) {
       generatePoNum,
       formatDateRequired,
       supplierId,
-      jobId,
-      poValue,
-      purchaseReason,
-      docketURL,
+      comments,
+      assetId,
       table,
       staffId,
     } = data;
@@ -35,83 +33,84 @@ async function purchaseOrders(payload) {
 
     const poCreatePayload = {
       payload: {
-        field_152: generatePoNum, // PO #
-        field_153: formatDateRequired, // Date Required
-        field_154: supplierId, // Supplier
-        field_163: jobId, // Job
-        field_155: purchaseReason, // Notes
-        field_174: docketURL,
-        field_156:
-          poValue === "Yes" ? "Pending Approval" : "Pending Collection", // Status
-        field_157: staffId, // Requested By
+        field_202: generatePoNum, // PO #
+        field_23: formatDateRequired, // Date Required
+        field_24: supplierId, // Supplier
+        field_204: assetId, // Asset
+        field_25: comments, // Comments
+        field_37: staffId, // Requested By
       },
     };
-    const poCreateRes = await API.api("POST", 19, poCreatePayload);
+    const poCreateRes = await API.api("POST", 3, poCreatePayload);
 
     console.log("poCreateRes", poCreateRes);
     // Create Line Items
     let formattedLines = [];
     linesTable.map(async (line) => {
       formattedLines.push({
-        field_150: line.stockItem, // Stock
-        field_164: line.stockQty, // Quantity
-        field_175: line.stockComments, // Comments
-        field_162: poCreateRes?.id, // Purchase Order
-        field_161: line.awaitingOrRecieved, // Status
+        field_43: line.stockId, // Stock
+        field_45: line.stockQty, // Quantity
+        field_48: line.buyRate, // Buy rate
+        field_49: line.sellRate, // Buy rate
+        field_205: line.stockComments, // Comments
+        field_45: line.quantityOrdered,
+        field_46: line.quantityCollected,
+        field_47: poCreateRes?.id, // Purchase Order
+        field_44: line.awaitingOrRecieved, // Status
       });
     });
 
-    const linesRes = await API.bulk("POST", 20, formattedLines);
+    const linesRes = await API.bulk("POST", 6, formattedLines);
     console.log("RES:", linesRes);
 
     formatAppenatePayload(poCreateRes, linesRes);
-  } else if (type === "Collect") {
-    console.log("COLLECTING");
-    const { poId, table, sumCompletedItems, countAvailableItems, docketURL } =
-      data;
+  } // else if (type === "Collect") {
+  //   console.log("COLLECTING");
+  //   const { poId, table, sumCompletedItems, countAvailableItems, docketURL } =
+  //     data;
 
-    const linesTable = Array.isArray(table) ? table : table ? [table] : "";
+  //   const linesTable = Array.isArray(table) ? table : table ? [table] : "";
 
-    // If all items have been completed, update po status to
-    if (Number(sumCompletedItems) === Number(countAvailableItems)) {
-      const poStatusUpdate = await API.api("PUT", 19, {
-        id: poId,
-        payload: {
-          field_156: "Collected", // Po Status
-        },
-      });
-      console.log("poStatusUpdate: ", poStatusUpdate);
-    }
+  //   // If all items have been completed, update po status to
+  //   if (Number(sumCompletedItems) === Number(countAvailableItems)) {
+  //     const poStatusUpdate = await API.api("PUT", 19, {
+  //       id: poId,
+  //       payload: {
+  //         field_156: "Collected", // Po Status
+  //       },
+  //     });
+  //     console.log("poStatusUpdate: ", poStatusUpdate);
+  //   }
 
-    let formattedLines = [];
-    linesTable.map((line) => {
-      const payload = {
-        field_161:
-          line?.collectedQ === "Yes" ? "Collected" : "Partially Collected",
-        field_177:
-          line?.collectedQ === "Yes" ? line?.qtyOrdered : line?.qtyCollected,
-      };
-      console.log("PAYLOAD", payload);
-      formattedLines.push({
-        id: line?.poItemId,
-        ...payload,
-      });
-    });
+  //   let formattedLines = [];
+  //   linesTable.map((line) => {
+  //     const payload = {
+  //       field_161:
+  //         line?.collectedQ === "Yes" ? "Collected" : "Partially Collected",
+  //       field_177:
+  //         line?.collectedQ === "Yes" ? line?.qtyOrdered : line?.qtyCollected,
+  //     };
+  //     console.log("PAYLOAD", payload);
+  //     formattedLines.push({
+  //       id: line?.poItemId,
+  //       ...payload,
+  //     });
+  //   });
 
-    const result = await API.bulk("PUT", 20, formattedLines);
-    console.log("UPDATING LINES", result);
+  //   const result = await API.bulk("PUT", 20, formattedLines);
+  //   console.log("UPDATING LINES", result);
 
-    // Update Docket Photo
-    await API.api("POST", 22, {
-      payload: {
-        field_179: poId,
-        field_182: {
-          filename: "po_docket",
-          url: docketURL,
-        },
-      },
-    });
-  }
+  //   // Update Docket Photo
+  //   await API.api("POST", 22, {
+  //     payload: {
+  //       field_179: poId,
+  //       field_182: {
+  //         filename: "po_docket",
+  //         url: docketURL,
+  //       },
+  //     },
+  //   });
+  // }
 }
 
 module.exports = purchaseOrders;
@@ -121,12 +120,13 @@ async function formatAppenatePayload(poPayload, linesRes) {
   if (poPayload?.id) {
     poTableData.push([
       poPayload?.id, // Knack ID
-      poPayload?.field_152, // PO #
-      getId(poPayload?.field_163_raw), // Job ID
-      getId(poPayload?.field_154_raw), // Supplier ID
-      poPayload?.field_155, // Comments
-      poPayload?.field_153, // Date required
-      poPayload?.field_156, // Status
+      poPayload?.field_202, // PO #
+      getId(poPayload?.field_204_raw), // Asset Id
+      getId(poPayload?.field_24_raw), // Supplier ID
+      poPayload?.field_25, // Comments
+      poPayload?.field_23, // Date required
+      poPayload?.field_203, // Supplier / Subcontractor
+      poPayload?.field_26, // Status
     ]);
   }
 
