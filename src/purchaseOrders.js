@@ -1,4 +1,4 @@
-const { API } = require("../api");
+const { KnackApi } = require("../api");
 const createOrUpdateRecords = require("../api/appenate");
 
 const COMPANY_ID = 61542;
@@ -41,7 +41,7 @@ async function purchaseOrders(payload) {
         field_37: staffId, // Requested By
       },
     };
-    const poCreateRes = await API.api("POST", 3, poCreatePayload);
+    const poCreateRes = await KnackApi.api("POST", 3, poCreatePayload);
 
     console.log("poCreateRes", poCreateRes);
     // Create Line Items
@@ -60,7 +60,7 @@ async function purchaseOrders(payload) {
       });
     });
 
-    const linesRes = await API.bulk("POST", 6, formattedLines);
+    const linesRes = await KnackApi.bulk("POST", 6, formattedLines);
     console.log("RES:", linesRes);
 
     formatAppenatePayload(poCreateRes, linesRes);
@@ -73,7 +73,7 @@ async function purchaseOrders(payload) {
 
   //   // If all items have been completed, update po status to
   //   if (Number(sumCompletedItems) === Number(countAvailableItems)) {
-  //     const poStatusUpdate = await API.api("PUT", 19, {
+  //     const poStatusUpdate = await KnackApi.api("PUT", 19, {
   //       id: poId,
   //       payload: {
   //         field_156: "Collected", // Po Status
@@ -97,11 +97,11 @@ async function purchaseOrders(payload) {
   //     });
   //   });
 
-  //   const result = await API.bulk("PUT", 20, formattedLines);
+  //   const result = await KnackApi.bulk("PUT", 20, formattedLines);
   //   console.log("UPDATING LINES", result);
 
   //   // Update Docket Photo
-  //   await API.api("POST", 22, {
+  //   await KnackApi.api("POST", 22, {
   //     payload: {
   //       field_179: poId,
   //       field_182: {
