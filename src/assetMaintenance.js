@@ -10,7 +10,6 @@ async function assetMaintenance(payload) {
   }
 
   const data = payload?.AnswersJson?.page1;
-
   const { staffId, assetId, workDoneTable, partsUsedTable } = data;
 
   const workTable = Array.isArray(workDoneTable)
@@ -26,8 +25,15 @@ async function assetMaintenance(payload) {
     : [];
 
   let formattedWorkLines = [];
+  let formattedStatusLines = [];
   if (workTable.length) {
     workTable.map((line) => {
+      formattedStatusLines.push({
+        id: line.issueId,
+        payload: {
+          field_164: line.resolvedStatus,
+        },
+      });
       formattedWorkLines.push({
         field_185: line.issueId, // Issue Id
         field_135: assetId, // Asset Job
@@ -59,6 +65,11 @@ async function assetMaintenance(payload) {
   try {
     if (formattedWorkLines.length) {
       const worklinesRes = await KnackApi.bulk("POST", 13, formattedWorkLines);
+      const worklinesRes = await KnackApi.bulk(
+        "POST",
+        16,
+        formattedStatusLines
+      );
       console.log("worklinesRes >>>> ", worklinesRes);
     }
 
