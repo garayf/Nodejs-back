@@ -29,7 +29,7 @@ async function purchaseOrders(payload) {
       staffId,
     } = data;
 
-    const linesTable = Array.isArray(table) ? table : table ? [table] : "";
+    const linesTable = Array.isArray(table) ? table : table ? [table] : [];
     console.log("CREATING");
 
     const poCreatePayload = {
@@ -48,24 +48,28 @@ async function purchaseOrders(payload) {
     console.log("poCreateRes", poCreateRes);
     // Create Line Items
     let formattedLines = [];
-    linesTable.map(async (line) => {
-      formattedLines.push({
-        field_43: line.stockId, // Stock
-        field_45: line.stockQty, // Quantity
-        field_48: line.buyRate, // Buy rate
-        field_49: line.sellRate, // Buy rate
-        field_205: line.stockComments, // Comments
-        field_45: line.quantityOrdered,
-        field_46: line.quantityCollected,
-        field_47: poCreateRes?.id, // Purchase Order
-        field_44: line.awaitingOrRecieved, // Status
+    if (linesTable.length) {
+      linesTable.map(async (line) => {
+        formattedLines.push({
+          field_43: line.stockId, // Stock
+          field_45: line.stockQty, // Quantity
+          field_48: line.buyRate, // Buy rate
+          field_49: line.sellRate, // Buy rate
+          field_205: line.stockComments, // Comments
+          field_45: line.quantityOrdered,
+          field_46: line.quantityCollected,
+          field_47: poCreateRes?.id, // Purchase Order
+          field_44: line.awaitingOrRecieved, // Status
+        });
       });
-    });
+    }
 
-    const linesRes = await KnackApi.bulk("POST", 6, formattedLines);
-    console.log("RES:", linesRes);
+    if (formattedLines.length) {
+      const linesRes = await KnackApi.bulk("POST", 6, formattedLines);
+      console.log("RES:", linesRes);
 
-    formatAppenatePayload(poCreateRes, linesRes);
+      formatAppenatePayload(poCreateRes, linesRes);
+    }
   } else if (type === "Collect") {
     console.log("COLLECTING");
 
@@ -83,8 +87,7 @@ async function purchaseOrders(payload) {
         },
       };
 
-      await KnackApi.api("PUT", 20, subData)
-
+      await KnackApi.api("PUT", 20, subData);
     } else {
       const { poId, table, sumCompletedItems, countAvailableItems, docketURL } =
         data;
