@@ -65,7 +65,9 @@ async function assetMaintenance(payload) {
   try {
     if (formattedWorkLines.length) {
       const worklinesRes = await KnackApi.bulk("POST", 13, formattedWorkLines);
-      const worklinesRes = await KnackApi.bulk(
+
+      // Update Asset Issue Status's
+      await KnackApi.bulk(
         "POST",
         16,
         formattedStatusLines
