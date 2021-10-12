@@ -1,8 +1,8 @@
 const { KnackApi } = require("../api");
 const createOrUpdateRecords = require("../api/appenate");
 
-const COMPANY_ID = 61542;
-const API_KEY = "1cf8b09d6ad242099fa67a76c8e864fa";
+const COMPANY_ID = 61652;
+const API_KEY = "9cb87d8323364acab09a696e1a28c26b";
 
 async function purchaseOrders(payload) {
   if (typeof payload !== "object") {
@@ -64,53 +64,53 @@ async function purchaseOrders(payload) {
     console.log("RES:", linesRes);
 
     formatAppenatePayload(poCreateRes, linesRes);
-  } // else if (type === "Collect") {
-  //   console.log("COLLECTING");
-  //   const { poId, table, sumCompletedItems, countAvailableItems, docketURL } =
-  //     data;
+  } else if (type === "Collect") {
+    console.log("COLLECTING");
+    const { poId, table, sumCompletedItems, countAvailableItems, docketURL } =
+      data;
 
-  //   const linesTable = Array.isArray(table) ? table : table ? [table] : "";
+    const linesTable = Array.isArray(table) ? table : table ? [table] : "";
 
-  //   // If all items have been completed, update po status to
-  //   if (Number(sumCompletedItems) === Number(countAvailableItems)) {
-  //     const poStatusUpdate = await KnackApi.api("PUT", 19, {
-  //       id: poId,
-  //       payload: {
-  //         field_156: "Collected", // Po Status
-  //       },
-  //     });
-  //     console.log("poStatusUpdate: ", poStatusUpdate);
-  //   }
+    // If all items have been completed, update po status to
+    if (Number(sumCompletedItems) === Number(countAvailableItems)) {
+      const poStatusUpdate = await KnackApi.api("PUT", 3, {
+        id: poId,
+        payload: {
+          field_26: "Collected", // Po Status
+        },
+      });
+      console.log("poStatusUpdate: ", poStatusUpdate);
+    }
 
-  //   let formattedLines = [];
-  //   linesTable.map((line) => {
-  //     const payload = {
-  //       field_161:
-  //         line?.collectedQ === "Yes" ? "Collected" : "Partially Collected",
-  //       field_177:
-  //         line?.collectedQ === "Yes" ? line?.qtyOrdered : line?.qtyCollected,
-  //     };
-  //     console.log("PAYLOAD", payload);
-  //     formattedLines.push({
-  //       id: line?.poItemId,
-  //       ...payload,
-  //     });
-  //   });
+    let formattedLines = [];
+    linesTable.map((line) => {
+      const payload = {
+        field_44:
+          line?.collectedQ === "Yes" ? "Collected" : "Partially Collected",
+        field_46:
+          line?.collectedQ === "Yes" ? line?.qtyOrdered : line?.qtyCollected,
+      };
+      console.log("PAYLOAD", payload);
+      formattedLines.push({
+        id: line?.poItemId,
+        ...payload,
+      });
+    });
 
-  //   const result = await KnackApi.bulk("PUT", 20, formattedLines);
-  //   console.log("UPDATING LINES", result);
+    const result = await KnackApi.bulk("PUT", 6, formattedLines);
+    console.log("UPDATING LINES", result);
 
-  //   // Update Docket Photo
-  //   await KnackApi.api("POST", 22, {
-  //     payload: {
-  //       field_179: poId,
-  //       field_182: {
-  //         filename: "po_docket",
-  //         url: docketURL,
-  //       },
-  //     },
-  //   });
-  // }
+    // Update Docket Photo
+    await KnackApi.api("POST", 18, {
+      payload: {
+        field_209: poId,
+        field_212: {
+          filename: "po_docket",
+          url: docketURL,
+        },
+      },
+    });
+  }
 }
 
 module.exports = purchaseOrders;
@@ -121,11 +121,11 @@ async function formatAppenatePayload(poPayload, linesRes) {
     poTableData.push([
       poPayload?.id, // Knack ID
       poPayload?.field_202, // PO #
-      getId(poPayload?.field_204_raw), // Asset Id
-      getId(poPayload?.field_24_raw), // Supplier ID
-      poPayload?.field_25, // Comments
-      poPayload?.field_23, // Date required
-      poPayload?.field_203, // Supplier / Subcontractor
+      getId(poPayload?.field_204_raw) || "", // Asset Id
+      getId(poPayload?.field_24_raw) || "", // Supplier ID
+      poPayload?.field_25 || "", // Comments
+      poPayload?.field_23 || "", // Date required
+      poPayload?.field_203 || "", // Supplier / Subcontractor
       poPayload?.field_26, // Status
     ]);
   }
@@ -136,11 +136,14 @@ async function formatAppenatePayload(poPayload, linesRes) {
   if (lines) {
     lines.map((line) => {
       linesPayload.push([
-        line?.id,
-        line?.field_150,
-        poPayload?.id,
-        line?.field_164,
-        line?.field_161,
+        line?.id, // id
+        line?.field_150 || "", // Stock
+        poPayload?.id, //Stock id
+        line?.field_164 || "", // Po Id
+        line?.field_161 || "", // qty ordered
+        line?.field_161 || "", // qty collected
+        line?.field_161 || "", // comments
+        line?.field_161 || "", // status
       ]);
     });
   }
@@ -149,14 +152,14 @@ async function formatAppenatePayload(poPayload, linesRes) {
   console.log("linesPayload", linesPayload);
 
   await createOrUpdateRecords(
-    "1d713cb4-855c-47a3-821a-ad8f018ae213",
+    "60428066-7baf-4c14-990e-adb800098094",
     poTableData,
     API_KEY,
     COMPANY_ID
   );
 
   await createOrUpdateRecords(
-    "41b40aed-da99-4919-922d-ad8f018b5231",
+    "5e03dc7e-5b16-405c-9721-adb80009a558",
     linesPayload,
     API_KEY,
     COMPANY_ID

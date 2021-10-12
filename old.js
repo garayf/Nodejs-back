@@ -1,3 +1,16 @@
+$("head").append(
+  "<link rel='apple-touch-icon-precomposed' sizes='57x57' href='https://iconifier.net/images/ghosted/apple-touch-icon-57x57.png' />"
+);
+$("head").append(
+  "<link rel='apple-touch-icon-precomposed' sizes='72x72' href='https://iconifier.net/images/ghosted/apple-touch-icon-72x72.png' />"
+);
+$("head").append(
+  "<link rel='apple-touch-icon-precomposed' sizes='114x114' href='https://iconifier.net/images/ghosted/apple-touch-icon-114x114.png' />"
+);
+$("head").append(
+  "<link rel='apple-touch-icon-precomposed' sizes='144x144' href='https://iconifier.net/images/ghosted/apple-touch-icon-144x144.png' />"
+);
+
 const pageRendered = $.Deferred();
 let openPoItemsMenu = true;
 let globalPoID = "";
@@ -417,9 +430,10 @@ const editTableList = [
   "knack-record-update.view_6", // Stock
   "knack-record-update.view_13", // Purchase Order
   "knack-record-update.view_25", // PO Item
+  "knack-record-update.view_76", // Purchase Order
+  "knack-record-update.view_81", // Purchase Order Item
   "knack-record-update.view_39", // Asset
-  "knack-record-update.view_44", // Asset Jobs
-  "knack-record-update.view_95", // Asset Issues
+  "knack-record-update.view_44", // Asset Maintenance (Pending)
 
   // Inline edit updates
   "knack-cell-update.view_1", // Supplier
@@ -431,40 +445,17 @@ const editTableList = [
 $(document).on(editTableList.join(" "), async function (event, view, record) {
   let count = 0;
   const editRecordMapping = {
-    // Suppliers
-    view_2: supplierFieldsMap,
-    view_1: supplierFieldsMap,
-    // Stock
-    view_6: stockFieldMap,
-    view_5: stockFieldMap,
-    // Purchase Orders
-    view_13: poFieldMap,
-    view_12: poFieldMap,
-    view_25: poLinesMap,
-
-    // Assets
-    view_38: assetFieldMap, // Inline
-    view_39: assetFieldMap,
-    view_44: assetJobMap,
-    view_95: assetIssuesMap,
+    // view_81: poItemFieldsMap,
   };
 
   const tableLookup = {
-    // Suppliers
-    view_2: "7a1c8e0a-3f16-406a-b388-adb8000888d2",
-    view_1: "7a1c8e0a-3f16-406a-b388-adb8000888d2",
-    // Stock
-    view_6: "70f6163e-4b1e-4d77-a3b9-adb7002b3396",
-    view_5: "70f6163e-4b1e-4d77-a3b9-adb7002b3396",
-    // Purchase Orders
-    view_13: "60428066-7baf-4c14-990e-adb800098094",
-    view_12: "60428066-7baf-4c14-990e-adb800098094",
-    view_25: "5e03dc7e-5b16-405c-9721-adb80009a558", // PO Item
-    // Assets
-    view_38: "5eb4932b-d454-47ba-becb-adb7001ff0d1", // Asset (Inline)
-    view_39: "5eb4932b-d454-47ba-becb-adb7001ff0d1", // Asset
-    view_44: "0a3c37c3-fd5e-47e9-9631-adb7015c2a68", // Asset Job
-    view_95: "dd7b6fd5-569f-4537-a553-adb700221608", // Asset issues
+    view_19: "", // Inline edit Assets
+    view_20: "", // Assets
+    view_70: "", // Inline edit Suppliers
+    view_71: "", // Suppliers
+    view_75: "", // Inline edit Purchase Order
+    view_76: "", // Purchase Order
+    view_81: "", // Purchase Order Item
   };
 
   const lookup = {
@@ -480,7 +471,6 @@ $(document).on(editTableList.join(" "), async function (event, view, record) {
     view_38: "Successfully updated asset!",
     view_39: "Successfully updated asset!",
     view_44: "Successfully updated maintenance!",
-    view_95: "Successfully updated issue!",
   };
 
   const keyLookup = {
@@ -492,17 +482,16 @@ $(document).on(editTableList.join(" "), async function (event, view, record) {
     view_44: "view_43", // asset maint
   };
 
-  const fieldMapping = editRecordMapping[view.key];
-  const table = tableLookup[view.key];
+  // const fieldMapping = editRecordMapping[view.key];
+  // const table = tableLookup[view.key];
 
-  if (fieldMapping && table) {
-    try {
-      const result = await syncDataSource(fieldMapping, record, table);
-      console.log("RESULT", result)
-    } catch (err) {
-      console.log("ERROR:", err);
-    }
-  }
+  // if (fieldMapping && table) {
+  //   try {
+  //     const result = await syncDataSource(fieldMapping, record, table);
+  //   } catch (err) {
+  //     console.log("ERROR:", err);
+  //   }
+  // }
 
   if (count === 0 && keyLookup[view.key])
     Knack.views[keyLookup[view.key]].model.fetch();
@@ -522,30 +511,33 @@ const createTableList = [
   "knack-record-create.view_15", // Purchase Order
   "knack-record-create.view_27", // PO Item
   "knack-record-create.view_37", // Asset
-  "knack-record-create.view_42", // Asset Job
-  "knack-record-create.view_97", // Asset issues
+  "knack-record-create.view_42", // Asset Maintenance (Pending)
 ];
 
 $(document).on(createTableList.join(" "), async function (event, view, record) {
-  const createRecordMapping = {
-    view_4: supplierFieldsMap,
-    view_8: stockFieldMap,
-    view_15: poFieldMap,
-    view_27: poLinesMap,
-    view_37: assetFieldMap,
-    view_42: assetJobMap,
-    view_97: assetIssuesMap,
-  };
+  // const createRecordMapping = {
+  //   view_5: [jobFieldsMap, dailyLogMap],
+  //   view_12: [staffFieldsMap, timesheetFieldsMap],
+  //   view_18: assetFieldsMap,
+  //   view_69: supplierFieldsMap,
+  //   view_74: poFieldsMap,
+  //   view_79: poItemFieldsMap,
+  // };
 
-  const tableLookup = {
-    view_4: "7a1c8e0a-3f16-406a-b388-adb8000888d2", // Supplier
-    view_8: "70f6163e-4b1e-4d77-a3b9-adb7002b3396", // Stock
-    view_15: "60428066-7baf-4c14-990e-adb800098094", // Purchase Order
-    view_27: "5e03dc7e-5b16-405c-9721-adb80009a558", // PO Item
-    view_37: "5eb4932b-d454-47ba-becb-adb7001ff0d1", // Asset
-    view_42: "0a3c37c3-fd5e-47e9-9631-adb7015c2a68", // Asset Job
-    view_97: "dd7b6fd5-569f-4537-a553-adb700221608", // Asset issues
-  };
+  // const tableLookup = {
+  //   view_5: [
+  //     "de18c112-8697-4c3f-8f60-ad8f018b4028", // Job
+  //     "cd5fb670-96ac-4134-8e51-ad8f018b2db3", // Job Daily Log
+  //   ],
+  //   view_12: [
+  //     "0faab756-3e3b-4049-a64e-ad8f018ac603", // Staff
+  //     "08dd80b5-01fb-41ba-bc8d-ad8f018ab5ac", // Staff Timesheets
+  //   ],
+  //   view_18: "7e1cbea7-bacf-46b4-a4b0-ad8f018af46b", // Assets
+  //   view_69: "11f83467-5a34-4447-bed4-ad8f0182dfce", // Suppliers
+  //   view_74: "1d713cb4-855c-47a3-821a-ad8f018ae213", // Purchase Order
+  //   view_79: "41b40aed-da99-4919-922d-ad8f018b5231", // Purchase Order Item
+  // };
 
   const lookup = {
     view_4: "Successfully created supplier!",
@@ -556,17 +548,16 @@ $(document).on(createTableList.join(" "), async function (event, view, record) {
     view_42: "Successfully created asset maintenance!",
   };
 
-  const fieldMapping = createRecordMapping[view.key];
-  const table = tableLookup[view.key];
+  // const fieldMapping = createRecordMapping[view.key];
+  // const table = tableLookup[view.key];
 
-  if (fieldMapping && table) {
-    try {
-      const result = await syncDataSource(fieldMapping, record, table);
-      console.log("result", result);
-    } catch (err) {
-      console.log("ERROR:", err);
-    }
-  }
+  // if (fieldMapping && table) {
+  //   try {
+  //     const result = await syncDataSource(fieldMapping, record, table);
+  //   } catch (err) {
+  //     console.log("ERROR:", err);
+  //   }
+  // }
 
   if (view.key !== "view_74" && view.key !== "view_79") Knack.closeModal();
   setTimeout(() => {
@@ -574,126 +565,6 @@ $(document).on(createTableList.join(" "), async function (event, view, record) {
   }, 800);
   //clearTimeout(createTimer)
 });
-
-/*****************************************************
- *
- * FIELD MAPPING
- *
- *****************************************************/
-
-const assetFieldMap = {
-  knackId: "id",
-  asset: "field_68",
-  type: "field_70",
-  lastChecked: "field_81",
-  rego: "field_73",
-  wofCof: "field_79",
-  hours: "field_84",
-  serviceDue: "field_86",
-  operational: "field_89",
-  status: "field_91",
-};
-
-const assetJobMap = {
-  knackId: "id",
-  jobNum: "field_180",
-  assetId: {
-    lookup: "field_93_raw",
-    values: ["id"],
-  },
-  display: "field_181",
-  issueCount: "field_182",
-  assignedTo: {
-    lookup: "field_97_raw",
-    values: ["id"],
-  },
-  description: "field_194",
-  status: "field_95",
-};
-
-const assetIssuesMap = {
-  knackId: "id",
-  issue: "field_162",
-  assetJobId: {
-    lookup: "field_161_raw",
-    values: ["id"],
-  },
-  assignedTo: {
-    lookup: "field_165_raw",
-    values: ["id"],
-  },
-  status: "field_163",
-};
-
-const supplierFieldsMap = {
-  knackID: "id",
-  supplier: "field_1",
-  address: {
-    lookup: "field_4_raw",
-    values: ["street", "street2", "city"],
-  },
-  phone: {
-    lookup: "field_5_raw",
-    values: ["formatted"],
-  },
-  email: {
-    lookup: "field_6_raw",
-    values: ["email"],
-  },
-  status: "field_9",
-};
-
-const stockFieldMap = {
-  knackId: "id",
-  stockNum: "field_50",
-  barcode: "field_12",
-  stockId: "field_13",
-  stockName: "field_14",
-  supplierId: {
-    lookup: "field_18_raw",
-    values: ["id"],
-  },
-  stockAvailable: "field_105",
-  buyRate: "field_16",
-  sellRate: "field_17",
-  margin: "field_150",
-  stockUnit: "field_19",
-  mov: "field_20",
-  status: "field_207",
-};
-
-const poFieldMap = {
-  knackId: "id",
-  poNum: "field_3",
-  assetId: {
-    lookup: "field_204_raw",
-    values: ["id"],
-  },
-  supplierId: {
-    lookup: "field_24_raw",
-    values: ["id"],
-  },
-  comments: "field_25",
-  dateRequired: "field_23",
-  supplierOrSubby: "field_203",
-  status: "field_26",
-};
-
-const poLinesMap = {
-  knackId: "id",
-  stockId: {
-    lookup: "field_43_raw",
-    values: ["id"],
-  },
-  poId: {
-    lookup: "field_47_raw",
-    values: ["id"],
-  },
-  quantityOrdered: "field_45",
-  quantityCollected: "field_46",
-  comments: "field_205",
-  status: "field_44",
-};
 
 /*****************************************************
  *
@@ -766,30 +637,204 @@ function hideSpinner() {
   return;
 }
 
-async function syncDataSource(formatedData, record, table) {
-  const payload = formatedData;
-
-  return fetch("https://knack-server.herokuapp.com/api/appenate-sync", {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      company_id: 61652,
-      api_key: "9cb87d8323364acab09a696e1a28c26b",
-      payload: payload,
-      record: record,
-      table: table,
-    }),
-  })
-    .then((response) => {
-      return response.status;
-    })
-    .catch((error) => {
-      return error;
-    });
-}
-
 //const filters = Knack.views[view].getFilters();
 //Knack.views[view].handleChangeFilters(filters);
+
+// let maintActiveRenderCount = 0;
+
+// $(document).on("knack-view-render.view_69", function (event, view, data) {
+//   const {
+//     ToastNotification,
+//     CurrentAssetWorkedOn,
+//     TwoColumnDetails,
+//     DetailSection,
+//   } = Components;
+
+//   console.log({ displayToast });
+//   if (displayToast) {
+//     $("body").append(`<div id="toastNotification"></div>`);
+
+//     ReactDOM.render(
+//       html`
+//         <${ToastNotification}
+//           heading="Success!"
+//           content="Successfully finished maintenance"
+//         />
+//       `,
+//       document.querySelector(`#toastNotification`)
+//     );
+//     setTimeout(() => {
+//       $("#toastNotification").remove();
+//       displayToast = false;
+//     }, 2000);
+//   }
+
+//   if (data.length === 0 && maintActiveRenderCount < 3) {
+//     setTimeout(() => {
+//       Knack.views.view_69.model.fetch();
+//     }, 1000);
+//     maintActiveRenderCount++;
+//   }
+//   $("#view_69 > div.kn-records-nav > div:nth-child(3)").hide();
+//   $(".kn-list-content .kn-list-item-container").each(function (index) {
+//     $($(this)).prepend(`<div id=activeAssetItem${index}></div>`);
+//     $($(this)[0].childNodes[2].children[0].children[0]).hide();
+
+//     ReactDOM.render(
+//       html`
+//       <${TwoColumnDetails}>
+//         <${DetailSection} label="Created" body=${data[index].field_92}/>
+//         <${DetailSection} label="Asset" body=${getIdentifier(
+//         data[index].field_93_raw
+//       )}/>
+//         <${DetailSection} label="Assigned To" body=${getIdentifier(
+//         data[index].field_97_raw
+//       )}/>
+//         <${DetailSection} label="Status" body=${data[index].field_95}/>
+//       </${TwoColumnDetails}>
+//     `,
+//       document.querySelector(`#activeAssetItem${index}`)
+//     );
+
+//     if (data[index].field_141_raw.length > 0) {
+//       ReactDOM.render(
+//         html`<${CurrentAssetWorkedOn} />`,
+//         document.querySelector(`#activeAssetItem${index}`)
+//       );
+//     }
+//   });
+
+// });
+// let maintRenderCount = 0;
+
+// $(document).on("knack-view-render.view_76", function (event, view, data) {
+//   const { ToastNotification } = Components;
+//   console.log({ displayToast });
+//   if (displayToast) {
+//     console.log({ displayToast });
+//     $("body").append(`<div id="toastNotification"></div>`);
+
+//     ReactDOM.render(
+//       html`
+//         <${ToastNotification}
+//           heading="Success!"
+//           content="Successfully started maintenance!"
+//         />
+//       `,
+//       document.querySelector(`#toastNotification`)
+//     );
+//     setTimeout(() => {
+//       $("#toastNotification").remove();
+//       displayToast = false;
+//     }, 2000);
+//   }
+
+//   // Hide filters
+//   $("#view_76 > div.kn-records-nav").hide();
+
+//   if (data.length === 0 && maintRenderCount < 3) {
+//     console.log("NO DATA: ", data);
+//     setTimeout(() => {
+//       Knack.views.view_76.model.fetch();
+//     }, 1000);
+//     maintRenderCount++;
+//   }
+//   console.log("DONE");
+//   return;
+// });
+
+// $(document).on("knack-view-render.view_72", function (event, view, data) {
+//   const maintenanceRecord = view.scene.scene_id;
+//   const staffId = userId();
+//   console.log("VIEW", view.scene.scene_id);
+
+//   // Populate Asset Maint Id
+//   $("#view_72-field_135").val(maintenanceRecord);
+//   $("#view_72-field_135").trigger("liszt:updated");
+
+//   // Populate staff ID
+//   $("#view_72-field_133").val(staffId);
+//   $("#view_72-field_133").trigger("liszt:updated");
+// });
+
+// $(document).on(
+//   "knack-record-create.view_72",
+//   async function (event, view, record) {
+//     const { ToastNotification } = Components;
+//     const maintRecord = record.field_135_raw[0].id;
+
+//     const data = {
+//       id: maintRecord,
+//       payload: {
+//         field_136: record.id,
+//         field_141: userId(),
+//       },
+//     };
+//     await KnackApi.api("PUT", 9, data);
+
+//     Knack.closeModal();
+//     closeModalRefresh();
+
+//     displayToast = true;
+//   }
+// );
+
+// // CRETE NEW ASSET DEFECT
+// $(document).on(
+//   "knack-record-create.view_80",
+//   async function (event, view, record) {
+//     console.log("RECORD", record);
+
+//     const data = {
+//       payload: {
+//         field_133: getId(record.field_133_raw), // Staff Id
+//         field_135: record.id, // Asset Maint Id
+//         field_137: record.field_99, // Start Time
+//       },
+//     };
+//     showSpinner();
+//     try {
+//       // Create Maintenance hours record
+//       const hoursRes = await KnackApi.api("POST", 13, data);
+//       console.log("hours", hoursRes);
+//       if (hoursRes.id) {
+//         // Update Maint record with hours Id
+//         const maintRes = await KnackApi.api("PUT", 9, {
+//           id: record.id,
+//           payload: { field_136: hoursRes.id },
+//         });
+
+//         console.log("maintRes: ", maintRes);
+//       }
+//       console.log("RES: ", hoursRes);
+//     } catch (err) {
+//       console.log("ERROR: ", err);
+//     }
+//     hideSpinner();
+//     navigatePreviousPage();
+//   }
+// );
+
+// $(document).on(
+//   "knack-record-update.view_78",
+//   async function (event, view, record) {
+//     const data = {
+//       id: userId(),
+//       payload: {
+//         field_140: "Signed Out",
+//       },
+//     };
+//     console.log("starting");
+
+//     console.time("updating");
+//     const res = await KnackApi.api("PUT", 4, data);
+//     console.timeEnd("updating");
+//     console.log("RES: ", res);
+
+//     Knack.closeModal();
+//     closeModalRefresh();
+//     //location.reload();
+
+//     displayToast = true;
+//   }
+// );
