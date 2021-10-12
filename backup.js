@@ -274,6 +274,61 @@ $(document).on(
   }
 );
 
+// Updates stock available when stock has been adjusted.
+$(document).on(
+  "knack-record-create.view_51",
+  async function (event, view, record) {
+    // console.log("DATA", data)
+    showSpinner();
+    const stockId = getId(record.field_56_raw);
+    console.log({ stockId });
+    const data = {
+      id: stockId,
+    };
+    const stockPayload = await KnackApi.api("GET", 2, data);
+
+    console.log("stockPayload", stockPayload);
+
+    const result = await syncDataSource(
+      stockFieldMap,
+      stockPayload,
+      "70f6163e-4b1e-4d77-a3b9-adb7002b3396"
+    );
+    console.log("UPDATE RES", result);
+    hideSpinner();
+    closeModalRefresh();
+  }
+);
+
+// Updated asset job database if a safety issue has been specified.
+$(document).on(
+  "knack-record-create.view_97",
+  async function (event, view, record) {
+    // console.log("DATA", data)
+    if (record.field_163 === "Safety Issue") {
+      showSpinner();
+      const assetJob = getId(record.field_161_raw);
+      console.log({ assetJob });
+      const data = {
+        id: assetJob,
+      };
+
+      const jobPayload = await KnackApi.api("GET", 9, data);
+
+      console.log("jobPayload", jobPayload);
+
+      const result = await syncDataSource(
+        assetJobMap,
+        jobPayload,
+        "0a3c37c3-fd5e-47e9-9631-adb7015c2a68"
+      );
+      console.log("UPDATE RES", result);
+      hideSpinner();
+      closeModalRefresh();
+    }
+  }
+);
+
 $(document).on("knack-view-render.view_38", async function (event, view, data) {
   const { Toggle } = Components;
   const plant = "#view_54";
@@ -350,7 +405,7 @@ $(document).on("knack-view-render.view_21", async function (event, view, data) {
       <div class="stat-group">
         <${StatCard}
           heading="Stock Available"
-          stat=${available > 0 ? available : 0}
+          stat=${available > 0 || available < 0 ? available : 0}
         />
         <${StatCard}
           heading="Stock Ordered"
@@ -505,7 +560,7 @@ $(document).on(editTableList.join(" "), async function (event, view, record) {
   if (fieldMapping && table) {
     try {
       const result = await syncDataSource(fieldMapping, record, table);
-      console.log("RESULT", result)
+      console.log("RESULT", result);
     } catch (err) {
       console.log("ERROR:", err);
     }
@@ -610,7 +665,6 @@ const staffFieldMap = {
   },
   status: "field_219",
 };
-
 
 const assetFieldMap = {
   knackId: "id",

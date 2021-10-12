@@ -15,7 +15,7 @@ async function purchaseOrders(payload) {
 
   const data = payload?.AnswersJson?.page1;
 
-  const { type } = data;
+  const { supplierOrSubby, type } = data;
 
   if (type === "Create") {
     const {
@@ -24,6 +24,7 @@ async function purchaseOrders(payload) {
       supplierId,
       comments,
       assetId,
+      subbyOrSupplier,
       table,
       staffId,
     } = data;
@@ -37,6 +38,7 @@ async function purchaseOrders(payload) {
         field_23: formatDateRequired, // Date Required
         field_24: supplierId, // Supplier
         field_204: assetId, // Asset
+        field_203: subbyOrSupplier,
         field_25: comments, // Comments
         field_37: staffId, // Requested By
       },
@@ -66,50 +68,68 @@ async function purchaseOrders(payload) {
     formatAppenatePayload(poCreateRes, linesRes);
   } else if (type === "Collect") {
     console.log("COLLECTING");
-    const { poId, table, sumCompletedItems, countAvailableItems, docketURL } =
-      data;
 
-    const linesTable = Array.isArray(table) ? table : table ? [table] : "";
+    if (supplierOrSubby === "Subcontractor") {
+      const subComments = data?.subComments;
+      const subPrice = data?.subPrice;
 
-    // If all items have been completed, update po status to
-    if (Number(sumCompletedItems) === Number(countAvailableItems)) {
-      const poStatusUpdate = await KnackApi.api("PUT", 3, {
-        id: poId,
+      const subData = {
+        id: data.poId,
         payload: {
-          field_26: "Collected", // Po Status
+          field_230: data.podId,
+          field_229: supplierId,
+          field_226: subComments,
+          field_228: subPrice,
         },
-      });
-      console.log("poStatusUpdate: ", poStatusUpdate);
-    }
-
-    let formattedLines = [];
-    linesTable.map((line) => {
-      const payload = {
-        field_44:
-          line?.collectedQ === "Yes" ? "Collected" : "Partially Collected",
-        field_46:
-          line?.collectedQ === "Yes" ? line?.qtyOrdered : line?.qtyCollected,
       };
-      console.log("PAYLOAD", payload);
-      formattedLines.push({
-        id: line?.poItemId,
-        ...payload,
+
+      await KnackApi.api("PUT", 20, subData)
+
+    } else {
+      const { poId, table, sumCompletedItems, countAvailableItems, docketURL } =
+        data;
+      const linesTable = Array.isArray(table) ? table : table ? [table] : "";
+
+      // If all items have been completed, update po status to
+      if (Number(sumCompletedItems) === Number(countAvailableItems)) {
+        const poStatusUpdate = await KnackApi.api("PUT", 3, {
+          id: poId,
+          payload: {
+            field_26: "Collected", // Po Status
+          },
+        });
+        console.log("poStatusUpdate: ", poStatusUpdate);
+      }
+
+      let formattedLines = [];
+      linesTable.map((line) => {
+        const payload = {
+          field_44:
+            line?.collectedQ === "Yes" ? "Collected" : "Partially Collected",
+          field_46:
+            line?.collectedQ === "Yes" ? line?.qtyOrdered : line?.qtyCollected,
+        };
+        console.log("PAYLOAD", payload);
+        formattedLines.push({
+          id: line?.poItemId,
+          ...payload,
+        });
       });
-    });
 
-    const result = await KnackApi.bulk("PUT", 6, formattedLines);
-    console.log("UPDATING LINES", result);
+      const result = await KnackApi.bulk("PUT", 6, formattedLines);
+      console.log("UPDATING LINES", result);
 
-    // Update Docket Photo
-    await KnackApi.api("POST", 18, {
-      payload: {
-        field_209: poId,
-        field_212: {
-          filename: "po_docket",
-          url: docketURL,
+      // Update Docket Photo
+      await KnackApi.api("POST", 18, {
+        payload: {
+          field_209: poId,
+          field_212: {
+            filename: "po_docket",
+            url: docketURL,
+          },
         },
-      },
-    });
+      });
+    }
   }
 }
 
