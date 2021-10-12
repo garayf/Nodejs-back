@@ -8,6 +8,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 const purchaseOrders = require("./src/purchaseOrders");
+const assetMaintenance = require("./src/assetMaintenance");
 
 app.get("/", (req, res) => res.send("Server running!"));
 
@@ -17,6 +18,18 @@ app.post("/api/purchase-order", async (req, res) => {
   try {
     const body = req.body;
     const result = await purchaseOrders(body?.Entry);
+    console.log(result);
+  } catch (err) {
+    console.log("ERROR", err);
+  }
+});
+
+app.post("/api/asset-maintenance", async (req, res) => {
+  res.sendStatus(200);
+
+  try {
+    const body = req.body;
+    const result = await assetMaintenance(body?.Entry);
     console.log(result);
   } catch (err) {
     console.log("ERROR", err);

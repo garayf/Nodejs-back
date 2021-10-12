@@ -415,6 +415,7 @@ $(document).on("knack-view-render.view_40", async function (event, view, data) {
 const editTableList = [
   "knack-record-update.view_2", // Supplier
   "knack-record-update.view_6", // Stock
+  "knack-record-update.view_112", // Staff
   "knack-record-update.view_13", // Purchase Order
   "knack-record-update.view_25", // PO Item
   "knack-record-update.view_39", // Asset
@@ -431,6 +432,8 @@ const editTableList = [
 $(document).on(editTableList.join(" "), async function (event, view, record) {
   let count = 0;
   const editRecordMapping = {
+    // Staff
+    view_112: staffFieldMap,
     // Suppliers
     view_2: supplierFieldsMap,
     view_1: supplierFieldsMap,
@@ -450,6 +453,8 @@ $(document).on(editTableList.join(" "), async function (event, view, record) {
   };
 
   const tableLookup = {
+    // Staff
+    view_112: "d0c20128-cd76-49f7-91e5-adb8000c3583",
     // Suppliers
     view_2: "7a1c8e0a-3f16-406a-b388-adb8000888d2",
     view_1: "7a1c8e0a-3f16-406a-b388-adb8000888d2",
@@ -468,6 +473,7 @@ $(document).on(editTableList.join(" "), async function (event, view, record) {
   };
 
   const lookup = {
+    view_112: "Successfully updated staff!",
     view_1: "Successfully updated supplier!",
     view_2: "Successfully updated supplier!",
     view_5: "Successfully updated stock!",
@@ -484,6 +490,7 @@ $(document).on(editTableList.join(" "), async function (event, view, record) {
   };
 
   const keyLookup = {
+    view_112: "view_111", // Staff
     view_2: "view_1", // Supplier
     view_6: "view_5", // Stock
     view_20: "view_19", // assets
@@ -519,6 +526,7 @@ $(document).on(editTableList.join(" "), async function (event, view, record) {
 const createTableList = [
   "knack-record-create.view_4", // Supplier
   "knack-record-create.view_8", // Stock
+  "knack-record-create.view_110", // Staff
   "knack-record-create.view_15", // Purchase Order
   "knack-record-create.view_27", // PO Item
   "knack-record-create.view_37", // Asset
@@ -530,6 +538,7 @@ $(document).on(createTableList.join(" "), async function (event, view, record) {
   const createRecordMapping = {
     view_4: supplierFieldsMap,
     view_8: stockFieldMap,
+    view_110: staffFieldMap,
     view_15: poFieldMap,
     view_27: poLinesMap,
     view_37: assetFieldMap,
@@ -540,6 +549,7 @@ $(document).on(createTableList.join(" "), async function (event, view, record) {
   const tableLookup = {
     view_4: "7a1c8e0a-3f16-406a-b388-adb8000888d2", // Supplier
     view_8: "70f6163e-4b1e-4d77-a3b9-adb7002b3396", // Stock
+    view_110: "d0c20128-cd76-49f7-91e5-adb8000c3583", // Staff
     view_15: "60428066-7baf-4c14-990e-adb800098094", // Purchase Order
     view_27: "5e03dc7e-5b16-405c-9721-adb80009a558", // PO Item
     view_37: "5eb4932b-d454-47ba-becb-adb7001ff0d1", // Asset
@@ -550,6 +560,7 @@ $(document).on(createTableList.join(" "), async function (event, view, record) {
   const lookup = {
     view_4: "Successfully created supplier!",
     view_8: "Successfully created stock!",
+    view_110: "Successfully created staff!",
     view_15: "Successfully created purchase order!",
     view_27: "Successfully created po item!",
     view_37: "Successfully created asset!",
@@ -580,6 +591,25 @@ $(document).on(createTableList.join(" "), async function (event, view, record) {
  * FIELD MAPPING
  *
  *****************************************************/
+
+const staffFieldMap = {
+  knackId: "id",
+  name: "field_215",
+  address: {
+    lookup: "field_217_raw",
+    values: ["street", "street2", "city"],
+  },
+  phone: {
+    lookup: "field_218_raw",
+    values: ["formatted"],
+  },
+  email: {
+    lookup: "field_216_raw",
+    values: ["email"],
+  },
+  status: "field_219",
+};
+
 
 const assetFieldMap = {
   knackId: "id",
