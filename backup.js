@@ -565,6 +565,7 @@ $(document).on(createTableList.join(" "), async function (event, view, record) {
     view_27: "Successfully created po item!",
     view_37: "Successfully created asset!",
     view_42: "Successfully created asset maintenance!",
+    view_97: "Successfully created issue!",
   };
 
   const fieldMapping = createRecordMapping[view.key];
@@ -653,6 +654,7 @@ const assetIssuesMap = {
     values: ["id"],
   },
   status: "field_163",
+  resolved: "field_164",
 };
 
 const supplierFieldsMap = {

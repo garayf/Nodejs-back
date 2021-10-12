@@ -24,16 +24,17 @@ async function assetMaintenance(payload) {
     ? [partsUsedTable]
     : [];
 
-  let formattedWorkLines = [];
   let formattedStatusLines = [];
+  let formattedWorkLines = [];
   if (workTable.length) {
-    workTable.map((line) => {
-      formattedStatusLines.push({
+    workTable.map(async (line) => {
+      const data = {
         id: line.issueId,
-        payload: {
-          field_164: line.resolvedStatus,
-        },
-      });
+        field_164: line.resolvedStatus,
+      }
+
+      formattedStatusLines.push(data);
+
       formattedWorkLines.push({
         field_185: line.issueId, // Issue Id
         field_135: assetId, // Asset Job
@@ -65,19 +66,23 @@ async function assetMaintenance(payload) {
   try {
     if (formattedWorkLines.length) {
       const worklinesRes = await KnackApi.bulk("POST", 13, formattedWorkLines);
-
-      // Update Asset Issue Status's
-      await KnackApi.bulk(
-        "POST",
-        16,
-        formattedStatusLines
-      );
-      console.log("worklinesRes >>>> ", worklinesRes);
+      console.log("worklinesRes >>>>>> ", worklinesRes);
     }
 
     if (formattedPartLines.length) {
       const partslinesRes = await KnackApi.bulk("POST", 11, formattedPartLines);
       console.log("partslinesRes >>>> ", partslinesRes);
+    }
+
+    console.log("formattedStatusLines >>>>>>> ", formattedStatusLines);
+    if (formattedStatusLines.length) {
+      console.log("formattedStatusLines LENGTH", formattedStatusLines.length);
+      const statuslinesRes = await KnackApi.bulk(
+        "PUT",
+        16,
+        formattedStatusLines
+      );
+      console.log("statuslinesRes >>>> ", statuslinesRes);
     }
   } catch (err) {
     console.log("ERROR: ", err);
