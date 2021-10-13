@@ -98,6 +98,21 @@ async function assetMaintenance(payload) {
 
       console.log("statusRes >>>>>", statusRes);
     }
+
+    if(data.assetStatusId) {
+      // Update asset status
+      const statusData = {
+        id: data.assetStatusId,
+        payload: {
+          field: data.assetStatus,
+        },
+      };
+
+      const assetStatusRes = await KnackApi.api("PUT", 10, statusData);
+
+      console.log("assetStatusRes", assetStatusRes);
+    }
+
   } catch (err) {
     console.log("ERROR: ", err);
   }

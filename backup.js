@@ -260,13 +260,26 @@ $(document).on(
 );
 
 $(document).on(
-  "knack-record-create.view_27",
-  async function (event, view, data) {
-    if (openPoItemsMenu) {
-      const url = window.location.href.split("rawsons")[1];
-      Knack.closeModal();
-      Knack.Navigation.redirectToURL(url);
-    }
+  "knack-record-create.view_27 knack-record-update.view_25",
+  async function (event, view, record) {
+    showSpinner();
+    const stockId = getId(record.field_43_raw);
+    console.log({ stockId });
+    const data = {
+      id: stockId,
+    };
+    const stockPayload = await KnackApi.api("GET", 2, data);
+
+    console.log("stockPayload", stockPayload);
+
+    const result = await syncDataSource(
+      stockFieldMap,
+      stockPayload,
+      "70f6163e-4b1e-4d77-a3b9-adb7002b3396"
+    );
+    console.log("UPDATE RES", result);
+    hideSpinner();
+    closeModalRefresh();
   }
 );
 
@@ -328,7 +341,7 @@ $(document).on(
 $(document).on("knack-view-render.view_38", async function (event, view, data) {
   const { Toggle } = Components;
   const plant = "#view_54";
-  $(`${general}, ${plant}, ${certs}`).hide();
+  $(`${plant}`).hide();
 
   const buttons = [
     { id: "view_38", name: "Vehicles" },
@@ -448,9 +461,9 @@ $(document).on(
 );
 
 $(document).on("knack-view-render.view_27", async function (event, view, data) {
-     $("#view_27-field_233").val(__globalSupplierId);
-     $("#view_27-field_233").trigger("liszt:updated");
-     $("#view_27-field_43").trigger("liszt:updated");
+    //  $("#view_27-field_233").val(__globalSupplierId);
+    //  $("#view_27-field_233").trigger("liszt:updated");
+    //  $("#view_27-field_43").trigger("liszt:updated");
 
      // $("#kn-input-field_233").hide();
 });
