@@ -80,7 +80,6 @@ async function purchaseOrders(payload) {
       const subPrice = data?.subPrice;
 
       const subData = {
-        id: data.poId,
         payload: {
           field_230: data.podId,
           field_229: supplierId,
@@ -89,7 +88,7 @@ async function purchaseOrders(payload) {
         },
       };
 
-      await KnackApi.api("PUT", 20, subData);
+      await KnackApi.api("POST", 20, subData);
     } else {
       const { poId, table, sumCompletedItems, countAvailableItems, docketURL } =
         data;
