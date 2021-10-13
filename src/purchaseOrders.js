@@ -104,7 +104,7 @@ async function purchaseOrders(payload) {
       await KnackApi.api("POST", 20, subData);
 
       const poStatusUpdate = await KnackApi.api("PUT", 3, {
-        id: poId,
+        id: data.poId,
         payload: {
           field_26: "Collected", // Po Status
         },

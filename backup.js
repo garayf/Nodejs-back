@@ -328,15 +328,11 @@ $(document).on(
 $(document).on("knack-view-render.view_38", async function (event, view, data) {
   const { Toggle } = Components;
   const plant = "#view_54";
-  const certs = "#view_55";
-  const general = "#view_53";
   $(`${general}, ${plant}, ${certs}`).hide();
 
   const buttons = [
     { id: "view_38", name: "Vehicles" },
     { id: "view_54", name: "Plant" },
-    { id: "view_55", name: "Certs" },
-    { id: "view_53", name: "General" },
   ];
 
   $(".view-column.view-column-group-1").append(`<div id="react2"></div>`);
