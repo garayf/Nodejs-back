@@ -28,6 +28,7 @@ async function purchaseOrders(payload) {
       table,
       staffId,
       poStatus,
+      docketUrl,
     } = data;
 
     const linesTable = Array.isArray(table) ? table : table ? [table] : [];
@@ -71,13 +72,14 @@ async function purchaseOrders(payload) {
       console.log("RES:", linesRes);
     }
 
-    if (data.docketUrl) {
+    console.log("DOCKET::: ", docketUrl);
+    if (docketUrl) {
       const docketRes = await KnackApi.api("POST", 18, {
         payload: {
           field_209: poCreateRes?.id,
           field_212: {
             filename: "po_docket",
-            url: data.docketURL,
+            url: docketUrl,
           },
         },
       });
