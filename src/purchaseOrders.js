@@ -27,6 +27,7 @@ async function purchaseOrders(payload) {
       subbyOrSupplier,
       table,
       staffId,
+      poStatus,
     } = data;
 
     const linesTable = Array.isArray(table) ? table : table ? [table] : [];
@@ -40,6 +41,7 @@ async function purchaseOrders(payload) {
         field_204: assetId, // Asset
         field_203: subbyOrSupplier,
         field_25: comments, // Comments
+        field_26: subbyOrSupplier === "Subcontractor" ? "Pending" : poStatus,
         field_37: staffId, // Requested By
       },
     };
@@ -160,13 +162,13 @@ async function formatAppenatePayload(poPayload, linesRes) {
     lines.map((line) => {
       linesPayload.push([
         line?.id, // id
-        line?.field_150 || "", // Stock
-        poPayload?.id, //Stock id
-        line?.field_164 || "", // Po Id
-        line?.field_161 || "", // qty ordered
-        line?.field_161 || "", // qty collected
-        line?.field_161 || "", // comments
-        line?.field_161 || "", // status
+        getIdentifier(line.field_43_raw) || "", // Stock
+        getId(line.field_43_raw), // Stock id
+        getId(line.field_47_raw) || "", // Po Id
+        line?.field_45 || "", // qty ordered
+        line?.field_46 || "", // qty collected
+        line?.field_205 || "", // comments
+        line?.field_44 || "", // status
       ]);
     });
   }
@@ -191,4 +193,8 @@ async function formatAppenatePayload(poPayload, linesRes) {
 
 function getId(field) {
   return Array.isArray(field) && field.length > 0 ? field[0].id : "";
+}
+
+function getIdentifier(field) {
+  return Array.isArray(field) && field.length > 0 ? field[0].identifier : "";
 }
