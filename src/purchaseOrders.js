@@ -123,10 +123,10 @@ async function purchaseOrders(payload) {
     // Update Docket Photo
     await KnackApi.api("POST", 18, {
       payload: {
-        field_209: poId,
+        field_209: data.poId,
         field_212: {
           filename: "po_docket",
-          url: docketURL,
+          url: data.docketURL,
         },
       },
     });
