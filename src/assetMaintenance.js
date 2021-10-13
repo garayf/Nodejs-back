@@ -10,7 +10,8 @@ async function assetMaintenance(payload) {
   }
 
   const data = payload?.AnswersJson?.page1;
-  const { staffId, assetId, workDoneTable, partsUsedTable } = data;
+  const { staffId, assetId, workDoneTable, partsUsedTable, updateAssetStatus } =
+    data;
 
   const workTable = Array.isArray(workDoneTable)
     ? workDoneTable
@@ -83,6 +84,19 @@ async function assetMaintenance(payload) {
         formattedStatusLines
       );
       console.log("statuslinesRes >>>> ", statuslinesRes);
+    }
+
+    if(updateAssetStatus === 'Resolved') {
+      const statusData = {
+        id: assetId,
+        payload: {
+          field_96: "Yes"
+        },
+      };
+      console.log("statusData", statusData);
+      const statusRes = await KnackApi.api("PUT", 9, statusData)
+
+      console.log("statusRes >>>>>", statusRes);
     }
   } catch (err) {
     console.log("ERROR: ", err);
