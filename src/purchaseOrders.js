@@ -123,18 +123,17 @@ async function purchaseOrders(payload) {
 
       const result = await KnackApi.bulk("PUT", 6, formattedLines);
       console.log("UPDATING LINES", result);
-
-      // Update Docket Photo
-      await KnackApi.api("POST", 18, {
-        payload: {
-          field_209: poId,
-          field_212: {
-            filename: "po_docket",
-            url: docketURL,
-          },
-        },
-      });
     }
+    // Update Docket Photo
+    await KnackApi.api("POST", 18, {
+      payload: {
+        field_209: poId,
+        field_212: {
+          filename: "po_docket",
+          url: docketURL,
+        },
+      },
+    });
   }
 }
 
