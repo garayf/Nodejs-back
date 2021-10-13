@@ -104,12 +104,9 @@ async function assetMaintenance(payload) {
       const statusData = {
         id: data.assetStatusId,
         payload: {
-          field: data.assetStatus,
+          field_89: data.assetStatus,
         },
       };
-
-      console.log("statusData >>>>> ", statusData);
-
       const assetStatusRes = await KnackApi.api("PUT", 10, statusData);
 
       console.log("assetStatusRes", assetStatusRes);
