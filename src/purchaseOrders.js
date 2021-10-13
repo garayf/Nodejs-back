@@ -76,15 +76,12 @@ async function purchaseOrders(payload) {
     console.log("COLLECTING");
 
     if (supplierOrSubby === "Subcontractor") {
-      const subComments = data?.subComments;
-      const subPrice = data?.subPrice;
-
       const subData = {
         payload: {
           field_230: data.podId,
-          field_229: supplierId,
-          field_226: subComments,
-          field_228: subPrice,
+          field_229: data.supplierId,
+          field_226: data?.subComments,
+          field_228: data?.subPrice,
         },
       };
 
