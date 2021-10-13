@@ -1,6 +1,7 @@
 const pageRendered = $.Deferred();
 let openPoItemsMenu = true;
 let globalPoID = "";
+let __globalSupplierId = ""
 // let displayToast = false;
 
 $(document).on("knack-view-render.any", function (event, scene) {
@@ -219,49 +220,44 @@ $(document).on(tableRefreshViews.join(" "), function (event, view, record) {
   count++;
 });
 
-$(document).on(
-  "knack-view-render.view_15 knack-view-render.view_27",
-  async function (event, view, data) {
-    const { ToggleSwitch } = Components;
-    openPoItemsMenu = false;
-    globalPoID = "";
+// $(document).on(
+//   "knack-view-render.view_15 knack-view-render.view_27",
+//   async function (event, view, data) {
+//     const { ToggleSwitch } = Components;
+//     openPoItemsMenu = false;
+//     globalPoID = "";
 
-    const toggleText =
-      view.key === "view_15"
-        ? "Check toggle to create purchase order items"
-        : "Check toggle to create another purchase order item";
-    $(`#${view.key} > form > div`).prepend(
-      `<div id="toggleSwitch${view.key}"></div>`
-    );
-    ReactDOM.render(
-      html`<${ToggleSwitch} text=${toggleText} />`,
-      document.querySelector(`#toggleSwitch${view.key}`)
-    );
-  }
-);
+//     const toggleText =
+//       view.key === "view_15"
+//         ? "Check toggle to create purchase order items"
+//         : "Check toggle to create another purchase order item";
+//     $(`#${view.key} > form > div`).prepend(
+//       `<div id="toggleSwitch${view.key}"></div>`
+//     );
+//     ReactDOM.render(
+//       html`<${ToggleSwitch} text=${toggleText} />`,
+//       document.querySelector(`#toggleSwitch${view.key}`)
+//     );
+//   }
+// );
 
 $(document).on(
   "knack-record-create.view_15",
   async function (event, view, data) {
-    if (openPoItemsMenu) {
-      globalPoID = data.id;
-      Knack.closeModal();
-      Knack.Navigation.redirectToURL(
-        `#purchase-orders/view-purchase-order-details/${globalPoID}/add-purchase-order-item/${globalPoID}/`
-      );
-    }
-    Knack.views["view_75"].model.fetch();
-  }
-);
-
-$(document).on(
-  "knack-record-create.view_42",
-  async function (event, view, data) {
     Knack.Navigation.redirectToURL(
-      `rawsons#asset-maintenance/view-asset-maintenance-details/${data.id}`
+      `#purchase-orders/view-purchase-order-details/${data.id}`
     );
   }
 );
+
+// $(document).on(
+//   "knack-record-create.view_42",
+//   async function (event, view, data) {
+//     Knack.Navigation.redirectToURL(
+//       `rawsons#asset-maintenance/view-asset-maintenance-details/${data.id}`
+//     );
+//   }
+// );
 
 $(document).on(
   "knack-record-create.view_27",
@@ -427,25 +423,40 @@ $(document).on("knack-view-render.view_21", async function (event, view, data) {
   );
 });
 
-$(document).on("knack-view-render.view_23", async function (event, view, data) {
-  const { Toggle } = Components;
-  const itemsMenu = "#view_26";
-  const itemsTable = "#view_24";
-  const docketsMenu = "#view_31";
-  const docketsTable = "#view_33";
+// $(document).on("knack-view-render.view_23", async function (event, view, data) {
+//   const { Toggle } = Components;
+//   const itemsMenu = "#view_26";
+//   const itemsTable = "#view_24";
+//   const docketsMenu = "#view_31";
+//   const docketsTable = "#view_33";
 
-  $(`${docketsMenu}, ${docketsTable}`).hide();
+//   $(`${docketsMenu}, ${docketsTable}`).hide();
 
-  const buttons = [
-    { id: ["view_26, view_24"], name: "PO Items" },
-    { id: ["view_31, view_33"], name: "Dockets" },
-  ];
+//   const buttons = [
+//     { id: ["view_26, view_24"], name: "PO Items" },
+//     { id: ["view_31, view_33"], name: "Dockets" },
+//   ];
 
-  $("#view_23").append(`<div id="poDetails"></div>`);
-  ReactDOM.render(
-    html`<${Toggle} buttons=${buttons} initView="view_23" />`,
-    document.querySelector("#poDetails")
-  );
+//   $("#view_23").append(`<div id="poDetails"></div>`);
+//   ReactDOM.render(
+//     html`<${Toggle} buttons=${buttons} initView="view_23" />`,
+//     document.querySelector("#poDetails")
+//   );
+// });
+
+$(document).on(
+  "knack-view-render.view_23",
+  async function (event, view, data) {
+    __globalSupplierId = getId(data.field_24_raw)
+  }
+);
+
+$(document).on("knack-view-render.view_27", async function (event, view, data) {
+     $("#view_27-field_233").val(__globalSupplierId);
+     $("#view_27-field_233").trigger("liszt:updated");
+     $("#view_27-field_43").trigger("liszt:updated");
+
+     // $("#kn-input-field_233").hide();
 });
 
 $(document).on("knack-view-render.view_40", async function (event, view, data) {
@@ -767,6 +778,10 @@ const poFieldMap = {
 
 const poLinesMap = {
   knackId: "id",
+  stockName: {
+    lookup: "field_43_raw",
+    values: ["identifier"],
+  },
   stockId: {
     lookup: "field_43_raw",
     values: ["id"],

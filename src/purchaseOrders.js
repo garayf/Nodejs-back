@@ -61,24 +61,23 @@ async function purchaseOrders(payload) {
           field_45: line.quantityOrdered,
           field_46: line.quantityCollected,
           field_47: poCreateRes?.id, // Purchase Order
-          field_44: line.awaitingOrRecieved, // Status
+          field_44: line.awaitingOrReceived, // Status
         });
       });
     }
-
+    let linesRes = []
     if (formattedLines.length) {
-      const linesRes = await KnackApi.bulk("POST", 6, formattedLines);
+      linesRes = await KnackApi.bulk("POST", 6, formattedLines);
       console.log("RES:", linesRes);
-
-      formatAppenatePayload(poCreateRes, linesRes);
     }
+    formatAppenatePayload(poCreateRes, linesRes);
   } else if (type === "Collect") {
     console.log("COLLECTING");
 
     if (supplierOrSubby === "Subcontractor") {
       const subData = {
         payload: {
-          field_230: data.podId,
+          field_230: data.poId,
           field_229: data.supplierId,
           field_226: data?.subComments,
           field_228: data?.subPrice,
@@ -121,7 +120,7 @@ async function purchaseOrders(payload) {
       console.log("UPDATING LINES", result);
     }
     // Update Docket Photo
-    await KnackApi.api("POST", 18, {
+    const docketRes = await KnackApi.api("POST", 18, {
       payload: {
         field_209: data.poId,
         field_212: {
@@ -130,6 +129,7 @@ async function purchaseOrders(payload) {
         },
       },
     });
+    console.log("DOCKET RES >>>>", docketRes)
   }
 }
 
@@ -171,19 +171,24 @@ async function formatAppenatePayload(poPayload, linesRes) {
   console.log("poTableData", poTableData);
   console.log("linesPayload", linesPayload);
 
-  await createOrUpdateRecords(
+  const poItem = await createOrUpdateRecords(
     "60428066-7baf-4c14-990e-adb800098094",
     poTableData,
     API_KEY,
     COMPANY_ID
   );
+  console.log("poItem >>> ", poItem);
 
-  await createOrUpdateRecords(
+  if(linesPayload.length) {
+  const poLines = await createOrUpdateRecords(
     "5e03dc7e-5b16-405c-9721-adb80009a558",
     linesPayload,
     API_KEY,
     COMPANY_ID
   );
+  console.log("poLines >>> ", poLines);
+  }
+
 }
 
 function getId(field) {
