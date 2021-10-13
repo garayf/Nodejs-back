@@ -65,11 +65,26 @@ async function purchaseOrders(payload) {
         });
       });
     }
-    let linesRes = []
+    let linesRes = [];
     if (formattedLines.length) {
       linesRes = await KnackApi.bulk("POST", 6, formattedLines);
       console.log("RES:", linesRes);
     }
+
+    if (data.docketUrl) {
+      const docketRes = await KnackApi.api("POST", 18, {
+        payload: {
+          field_209: poCreateRes?.id,
+          field_212: {
+            filename: "po_docket",
+            url: data.docketURL,
+          },
+        },
+      });
+
+      console.log("docketRes >>>>> >", docketRes);
+    }
+
     formatAppenatePayload(poCreateRes, linesRes);
   } else if (type === "Collect") {
     console.log("COLLECTING");
@@ -105,11 +120,10 @@ async function purchaseOrders(payload) {
       linesTable.map((line) => {
         const payload = {
           field_44:
-            line?.collectedQ === "Yes" ? "Collected" : "Partially Collected",
+            line?.collectedQ === "Yes" ? "Received" : "Partially Collected",
           field_46:
             line?.collectedQ === "Yes" ? line?.qtyOrdered : line?.qtyCollected,
         };
-        console.log("PAYLOAD", payload);
         formattedLines.push({
           id: line?.poItemId,
           ...payload,
@@ -129,7 +143,7 @@ async function purchaseOrders(payload) {
         },
       },
     });
-    console.log("DOCKET RES >>>>", docketRes)
+    console.log("DOCKET RES >>>>", docketRes);
   }
 }
 
@@ -179,16 +193,15 @@ async function formatAppenatePayload(poPayload, linesRes) {
   );
   console.log("poItem >>> ", poItem);
 
-  if(linesPayload.length) {
-  const poLines = await createOrUpdateRecords(
-    "5e03dc7e-5b16-405c-9721-adb80009a558",
-    linesPayload,
-    API_KEY,
-    COMPANY_ID
-  );
-  console.log("poLines >>> ", poLines);
+  if (linesPayload.length) {
+    const poLines = await createOrUpdateRecords(
+      "5e03dc7e-5b16-405c-9721-adb80009a558",
+      linesPayload,
+      API_KEY,
+      COMPANY_ID
+    );
+    console.log("poLines >>> ", poLines);
   }
-
 }
 
 function getId(field) {
