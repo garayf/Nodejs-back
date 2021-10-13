@@ -250,14 +250,14 @@ $(document).on(
   }
 );
 
-// $(document).on(
-//   "knack-record-create.view_42",
-//   async function (event, view, data) {
-//     Knack.Navigation.redirectToURL(
-//       `rawsons#asset-maintenance/view-asset-maintenance-details/${data.id}`
-//     );
-//   }
-// );
+$(document).on(
+  "knack-record-create.view_42",
+  async function (event, view, data) {
+    Knack.Navigation.redirectToURL(
+      `rawsons#asset-maintenance/view-asset-maintenance-details/${data.id}`
+    );
+  }
+);
 
 $(document).on(
   "knack-record-create.view_27",
