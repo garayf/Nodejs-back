@@ -412,18 +412,19 @@ $(document).on("knack-view-render.view_21", async function (event, view, data) {
           heading="Stock Available"
           stat=${available > 0 || available < 0 ? available : 0}
         />
-        <${StatCard}
-          heading="Stock Ordered"
-          stat=${ordered > 0 ? ordered : 0}
-        />
-        <${StatCard}
-          heading="Stock Collected"
-          stat=${collected > 0 ? collected : 0}
-        />
+
       </div>
     `,
     document.querySelector("#stockStats")
   );
+        //   <${StatCard}
+        //   heading="Stock Ordered"
+        //   stat=${ordered > 0 ? ordered : 0}
+        // />
+        // <${StatCard}
+        //   heading="Stock Collected"
+        //   stat=${collected > 0 ? collected : 0}
+        // />
 
   $(".view-column.view-column-group-1").append(`<div id="stockDetails"></div>`);
   ReactDOM.render(

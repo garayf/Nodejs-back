@@ -59,7 +59,9 @@ async function purchaseOrders(payload) {
           field_48: line.buyRate, // Buy rate
           field_49: line.sellRate, // Buy rate
           field_205: line.stockComments, // Comments
-          field_45: line.quantityOrdered,
+          field_45: line.quantityOrdered
+            ? line.quantityOrdered
+            : line.quantityCollected,
           field_46: line.quantityCollected,
           field_47: poCreateRes?.id, // Purchase Order
           field_44: line.awaitingOrReceived, // Status
