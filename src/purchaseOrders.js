@@ -103,7 +103,6 @@ async function purchaseOrders(payload) {
       } catch(err) {
         console.log('error', err)
       }
-
     }
 
     formatAppenatePayload(poCreateRes, linesRes);
@@ -120,7 +119,12 @@ async function purchaseOrders(payload) {
         },
       };
 
-      await KnackApi.api("POST", 20, subData);
+      try {
+        await KnackApi.api("POST", 20, subData);
+      } catch(err) {
+        console.log("ERROR", err)
+      }
+
 
       const poStatusUpdate = await KnackApi.api("PUT", 3, {
         id: data.poId,
