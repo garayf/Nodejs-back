@@ -46,7 +46,13 @@ async function purchaseOrders(payload) {
         field_37: staffId, // Requested By
       },
     };
-    const poCreateRes = await KnackApi.api("POST", 3, poCreatePayload);
+    const poCreateRes;
+
+    try {
+      poCreateRes = await KnackApi.api("POST", 3, poCreatePayload)
+    } catch(err) {
+      console.log("ERROR", err)
+    }
 
     console.log("poCreateRes", poCreateRes);
     // Create Line Items
@@ -59,9 +65,10 @@ async function purchaseOrders(payload) {
           field_48: line.buyRate, // Buy rate
           field_49: line.sellRate, // Buy rate
           field_205: line.stockComments, // Comments
-          field_45: line.quantityOrdered
-            ? line.quantityOrdered
-            : line.quantityCollected,
+          field_45:
+            line.quantityOrdered !== "0"
+              ? line.quantityOrdered
+              : line.quantityCollected,
           field_46: line.quantityCollected,
           field_47: poCreateRes?.id, // Purchase Order
           field_44: line.awaitingOrReceived, // Status
@@ -70,12 +77,18 @@ async function purchaseOrders(payload) {
     }
     let linesRes = [];
     if (formattedLines.length) {
+      try {
       linesRes = await KnackApi.bulk("POST", 6, formattedLines);
       console.log("RES:", linesRes);
+      } catch(err) {
+        console.log('error', err)
+      }
+
     }
 
     console.log("DOCKET::: ", docketUrl);
     if (docketUrl) {
+    try {
       const docketRes = await KnackApi.api("POST", 18, {
         payload: {
           field_209: poCreateRes?.id,
@@ -87,6 +100,10 @@ async function purchaseOrders(payload) {
       });
 
       console.log("docketRes >>>>> >", docketRes);
+      } catch(err) {
+        console.log('error', err)
+      }
+
     }
 
     formatAppenatePayload(poCreateRes, linesRes);
@@ -142,8 +159,14 @@ async function purchaseOrders(payload) {
         });
       });
 
-      const result = await KnackApi.bulk("PUT", 6, formattedLines);
-      console.log("UPDATING LINES", result);
+      try {
+        const result = await KnackApi.bulk("PUT", 6, formattedLines);
+        console.log("UPDATING LINES", result);
+      } catch(err) {
+        console.log("error", err)
+      }
+
+
     }
     // Update Docket Photo
     const docketRes = await KnackApi.api("POST", 18, {

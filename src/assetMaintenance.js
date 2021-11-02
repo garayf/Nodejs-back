@@ -32,7 +32,7 @@ async function assetMaintenance(payload) {
       const data = {
         id: line.issueId,
         field_164: line.resolvedStatus,
-      }
+      };
 
       formattedStatusLines.push(data);
 
@@ -64,19 +64,27 @@ async function assetMaintenance(payload) {
     });
   }
 
-  try {
-    if (formattedWorkLines.length) {
+  if (formattedWorkLines.length) {
+    try {
       const worklinesRes = await KnackApi.bulk("POST", 13, formattedWorkLines);
       console.log("worklinesRes >>>>>> ", worklinesRes);
+    } catch (err) {
+      console.log("ERROR", err);
     }
+  }
 
-    if (formattedPartLines.length) {
+  if (formattedPartLines.length) {
+    try {
       const partslinesRes = await KnackApi.bulk("POST", 11, formattedPartLines);
       console.log("partslinesRes >>>> ", partslinesRes);
+    } catch (err) {
+      console.log("ERROR ", err);
     }
+  }
 
-    console.log("formattedStatusLines >>>>>>> ", formattedStatusLines);
-    if (formattedStatusLines.length) {
+  console.log("formattedStatusLines >>>>>>> ", formattedStatusLines);
+  if (formattedStatusLines.length) {
+    try {
       console.log("formattedStatusLines LENGTH", formattedStatusLines.length);
       const statuslinesRes = await KnackApi.bulk(
         "PUT",
@@ -84,36 +92,43 @@ async function assetMaintenance(payload) {
         formattedStatusLines
       );
       console.log("statuslinesRes >>>> ", statuslinesRes);
+    } catch (err) {
+      console.log("ERROR ", err);
     }
+  }
 
-    if(updateAssetStatus === 'Resolved') {
-      const statusData = {
-        id: assetId,
-        payload: {
-          field_96: "Yes"
-        },
-      };
+  if (updateAssetStatus === "Resolved") {
+    const statusData = {
+      id: assetId,
+      payload: {
+        field_96: "Yes",
+      },
+    };
+    try {
       console.log("statusData", statusData);
-      const statusRes = await KnackApi.api("PUT", 9, statusData)
+      const statusRes = await KnackApi.api("PUT", 9, statusData);
 
       console.log("statusRes >>>>>", statusRes);
+    } catch (err) {
+      console.log("ERROR ", err);
     }
+  }
 
-    if(data.assetStatusId) {
-      // Update asset status
-      const statusData = {
-        id: data.assetStatusId,
-        payload: {
-          field_89: data.assetStatus,
-        },
-      };
+  if (data.assetStatusId) {
+    // Update asset status
+    const statusData = {
+      id: data.assetStatusId,
+      payload: {
+        field_89: data.assetStatus,
+      },
+    };
+    try {
       const assetStatusRes = await KnackApi.api("PUT", 10, statusData);
 
       console.log("assetStatusRes", assetStatusRes);
+    } catch (err) {
+      console.log("ERROR ", err);
     }
-
-  } catch (err) {
-    console.log("ERROR: ", err);
   }
 }
 
