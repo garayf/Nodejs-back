@@ -46,7 +46,7 @@ async function purchaseOrders(payload) {
         field_37: staffId, // Requested By
       },
     };
-    const poCreateRes;
+    let poCreateRes;
 
     try {
       poCreateRes = await KnackApi.api("POST", 3, poCreatePayload)
