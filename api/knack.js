@@ -1,8 +1,7 @@
 const axios = require("axios");
 const sleep = require("./utils/sleep");
-const Time = require("./utils/Time");
 
-class API {
+class KnackApi {
   #api;
 
   constructor(appId, apiKey) {
@@ -165,8 +164,6 @@ class API {
         dataFormatted.push({ id, payload });
       }
     }
-    console.log("dataFormatted", dataFormatted);
-    const timer = new Time();
     const success = [];
     const failed = [];
 
@@ -175,7 +172,6 @@ class API {
     // Loop all dataFormatted and do one of the CUD operation
     for (let i = 0; i < dataFormatted.length; i++) {
       const data = dataFormatted[i];
-      console.log("DATA:", data);
       pendings.push({
         payload: data.payload,
         request: await this.api(method, objNo, data),
@@ -185,8 +181,8 @@ class API {
 
       // Settle all if total request is less than 10 and reached end of the record
       if (
-        (dataFormatted.length <= 10 && i === dataFormatted.length - 1) ||
-        (recordNo % 10 !== 0 && i === dataFormatted.length - 1)
+        (dataFormatted.length <= 8 && i === dataFormatted.length - 1) ||
+        (recordNo % 8 !== 0 && i === dataFormatted.length - 1)
       ) {
         const [fullfiled, rejected] = await this.#getPromiseResponses(pendings);
         success.push(...fullfiled);
@@ -194,22 +190,18 @@ class API {
       }
 
       // Settle all promised when looping records reached 10
-      if (dataFormatted.length > 10 && recordNo % 10 === 0) {
-        timer.start(); // record start time
-
+      if (dataFormatted.length > 8 && recordNo % 8 === 0) {
         const [fullfiled, rejected] = await this.#getPromiseResponses(pendings);
         success.push(...fullfiled);
         failed.push(...rejected);
         pendings = []; // Reset pendings
 
-        timer.end(); // record end time
-        const remaining = timer.remaining(1000);
-        if (remaining > 0) await sleep(remaining); // wait for remaining time
+        await sleep(300); // wait for remaining time
       }
     }
-    console.log("TIMER", timer);
+    console.log("FAILED", failed);
     return { success, failed };
   };
 }
 
-module.exports = API;
+module.exports = KnackApi;
