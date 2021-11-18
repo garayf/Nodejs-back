@@ -1,2 +1,8 @@
-node_modules/
+node_modules
 .env
+.envClements
+.vscode
+package-lock.json
+test/artifacts/*
+files/*
+.DS_Store
