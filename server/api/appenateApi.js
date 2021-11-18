@@ -110,7 +110,11 @@ exports.plugin = {
             if (formatType=="Asset_maintenance_form"){
                 knackObj = KNACK_OBJECTS_IDS.AssetsJobs;
                 datasourceID = process.env.ASSETJOBS;
-            }        
+            }else if(formatType=="Asset_Issues_Update"){
+                knackObj = KNACK_OBJECTS_IDS.AssetsJobs;
+                datasourceID = process.env.ASSETJOBS;
+            } 
+
 
             var knackRecords="";
             // console.log(recordsList);
@@ -199,6 +203,8 @@ exports.plugin = {
             let convertRecord = false;
             switch (recordType) {
                 case "Asset_maintenance_form": convertRecord = apntAssetJobs; break;
+                case "Asset_Issues_Update": convertRecord = apntAssetIssues; break;
+                
             }
             if(!convertRecord) return false;
 
@@ -226,6 +232,26 @@ exports.plugin = {
                     "Description": recbody.field_194,
                     "Status": recbody.field_95,
                     "Maintenance Status": "Stopped",
+                };
+                return Object.values(payload);
+                // return payload;
+            } catch (e) {
+                console.log(e);
+            }
+            return false;
+        };
+
+        var apntAssetIssues = (recbody) => {
+            //console.log(recbody);
+            try {
+                let payload = {
+                    "KnackID": recbody.id,
+                    "Issue": recbody.field_162,
+                    "Asset Job ID": recbody.field_161_raw[0].id,
+                    "Assigned To":  recbody.field_165_raw[0].id,                   
+                    "Issue Status": recbody.field_163,
+                    "Status": recbody.field_164,
+                    "Issue Logs": recbody.field_194                    
                 };
                 return Object.values(payload);
                 // return payload;
@@ -312,8 +338,7 @@ exports.plugin = {
                     "field_241": formData.staffId
                 }
                 createMaintenance("", formData,"");                
-            }else{
-                updateAPNTdataSource("Asset_maintenance_form");
+            }else{                
                 updateMaintenancehours("", formData,"");                
                 if(formData.CountParts > 1){                    
                     for (var i = 0 ; i < formData.partsUsedTable.length ; i++){                        
@@ -355,7 +380,7 @@ exports.plugin = {
                 console.log(e.error);
                 console.log("Unexpected error updating record on database.")
             }                 
-            
+            updateAPNTdataSource("Asset_maintenance_form");
             return replyBody
 
         }
@@ -392,10 +417,10 @@ exports.plugin = {
             var foundID = knackRecordsIssues.find(kr =>              
                 formData.assetIssue == kr.id          
             );    
-
+            let resolved = (formData.resolvedStatus == 'Resolved')?'Yes':'No';    
             var knackPayload = {
                 "field_163": total.assetStatus,//status
-                "field_164": formData.resolvedStatus, //Resolved  
+                "field_164": resolved, //Resolved  
                 "field_165": total.staffId //Asigned to      
             }            
             //console.log(knackPayload);  
@@ -412,6 +437,7 @@ exports.plugin = {
                 console.log(e.error);
                 console.log("Unexpected error updating record assets on database.")
             }    
+            //updateAPNTdataSource("")                      
         }
 
         var createMaintenance = async (formPayload, formData, formType) => {
