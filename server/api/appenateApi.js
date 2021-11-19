@@ -338,8 +338,10 @@ exports.plugin = {
                     "field_241": formData.staffId
                 }
                 createMaintenance("", formData,"");                
-            }else{                
-                updateMaintenancehours("", formData,"");                
+            }else{      
+                updateAPNTdataSource("Asset_maintenance_form");          
+                updateMaintenancehours("", formData,"");    
+                updateAssets("", formData,"");              
                 if(formData.CountParts > 1){                    
                     for (var i = 0 ; i < formData.partsUsedTable.length ; i++){                        
                         createMaintenancePart(formData,formData.partsUsedTable[i]);
@@ -353,7 +355,6 @@ exports.plugin = {
                         updateAssetIssues(formData,formData.workDoneTable[i]);
                     }                    
                 }else if(formData.countAllCompletedItems == 1){
-                    console.log("uno")
                     updateAssetIssues(formData,formData.workDoneTable);
                 } 
 
@@ -361,8 +362,7 @@ exports.plugin = {
                     formData.assetSelected == kr.id
                 );    
                 var knackPayload = {
-                    "field_240": "Stopped",
-                    "field_241": "",
+                    "field_240": "Stopped",                    
                     "field_95": formData.assetStatus
                 }
             }
@@ -380,7 +380,7 @@ exports.plugin = {
                 console.log(e.error);
                 console.log("Unexpected error updating record on database.")
             }                 
-            updateAPNTdataSource("Asset_maintenance_form");
+            
             return replyBody
 
         }
@@ -404,26 +404,27 @@ exports.plugin = {
                     objectKey: KNACK_OBJECTS_IDS.MaintenanceParts,     
                     body: knackPayload,
                 })
-                console.log("knack result parts");    
-                console.log(knackPayload);           
+                //console.log("knack result parts");    
+                //console.log(knackPayload);           
             } catch (e) {
                 console.log(e.error);
                 console.log("Unexpected error updating record parts on database.")
             }            
         }
 
-        var updateAssetIssues = async (total, formData) => {
+        var updateAssetIssues = async (total, partialData) => {
             let knackRecordsIssues = await Knack.getAllRecords(1,[],KNACK_OBJECTS_IDS.AssetIssues);
             var foundID = knackRecordsIssues.find(kr =>              
-                formData.assetIssue == kr.id          
-            );    
-            let resolved = (formData.resolvedStatus == 'Resolved')?'Yes':'No';    
+                partialData.assetIssue == kr.id          
+            );                 
             var knackPayload = {
-                "field_163": total.assetStatus,//status
-                "field_164": resolved, //Resolved  
-                "field_165": total.staffId //Asigned to      
+                //"field_163": total.assetStatus,//status
+                "field_164": partialData.resolvedStatus, //Resolved  
+                "field_165": total.staffId, //Asigned to      
+                "field_252": partialData.workDone,// work done
+                "field_253": partialData.comments// comments
             }            
-            //console.log(knackPayload);  
+            console.log(knackPayload);  
             //console.log(foundID.id);
 
             try {
@@ -432,10 +433,10 @@ exports.plugin = {
                     id: foundID.id,      
                     body: knackPayload,
                 })
-                console.log("knack result Assets");   
+                console.log("knack result Assets issues");   
             } catch (e) {
                 console.log(e.error);
-                console.log("Unexpected error updating record assets on database.")
+                console.log("Unexpected error updating record assets issues on database.")
             }    
             //updateAPNTdataSource("")                      
         }
@@ -462,6 +463,35 @@ exports.plugin = {
                 console.log("Unexpected error updating record on database.")
             }            
             return true
+        }
+
+        var updateAssets = async (formPayload, formData, formType) => {            
+            let knackPayload = {
+                "field_89": (formData.assetStatus=='Resolved')?'Operational':formData.assetStatus
+            }
+            let knackRecordsAssets = await Knack.getAllRecords(1,[],KNACK_OBJECTS_IDS.Assets);            
+            //console.log("payload");
+            //console.log(knackPayload);
+            //console.log("asset selected") 
+            //console.log(formData.assetSelected);
+
+            var foundID = knackRecordsAssets.find(kr =>              
+                formData.assetDb == kr.id         
+            );  
+            
+            //console.log(foundID)       
+            try {
+                let knackCreate = await Knack.update({
+                    objectKey: KNACK_OBJECTS_IDS.Assets,
+                    id: foundID.id,
+                    body: knackPayload
+                })
+                console.log("knack result");
+            } catch (e) {
+                console.log(e.error);
+                console.log("Unexpected error updating record on database.")
+            }           
+            
         }
 
         var updateMaintenancehours = async (formPayload, formData, formType) => {
@@ -546,9 +576,9 @@ exports.plugin = {
             method: 'GET',
             path: '/test',
             handler: async function (request, h) {
-                console.log("Endpoint Here");
-                console.log(KNACK_OBJECTS_IDS)
-                // updateAPNTdataSource("timesheetsDB",false,true);
+                //console.log("Endpoint Here");
+                //console.log(KNACK_OBJECTS_IDS)
+                updateAssets("timesheetsDB");
                 return "Ok";
             }
         });
