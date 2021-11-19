@@ -351,7 +351,7 @@ exports.plugin = {
                 } 
 
                 if(formData.countAllCompletedItems > 1){                    
-                    for (var i = 0 ; i < formData.countAllCompletedItems.length ; i++){                        
+                    for (var i = 0 ; i < formData.countAllCompletedItems ; i++){                        
                         updateAssetIssues(formData,formData.workDoneTable[i]);
                     }                    
                 }else if(formData.countAllCompletedItems == 1){
