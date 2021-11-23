@@ -12,6 +12,7 @@ const Axios = require('axios').default;
 // const AxiosFM = require(newpath);
 const Moment= require('moment');
 const { Console } = require('console');
+const { partial } = require('lodash');
 
 exports.plugin = {
     name: 'appenateApi',
@@ -49,7 +50,7 @@ exports.plugin = {
                     delay: 5000
                 })
                 .then(function(response){
-                    resolve(response);
+                    resolve(response);                   
                 })
                 .catch(function(error){
                     console.log(error.message);
@@ -111,8 +112,8 @@ exports.plugin = {
                 knackObj = KNACK_OBJECTS_IDS.AssetsJobs;
                 datasourceID = process.env.ASSETJOBS;
             }else if(formatType=="Asset_Issues_Update"){
-                knackObj = KNACK_OBJECTS_IDS.AssetsJobs;
-                datasourceID = process.env.ASSETJOBS;
+                knackObj = KNACK_OBJECTS_IDS.AssetIssues;
+                datasourceID = process.env.ASSETISSUES;
             } 
 
 
@@ -129,7 +130,7 @@ exports.plugin = {
                 }
             }
 
-            console.log(knackRecords.length);
+            //console.log(knackRecords.length);
             if(knackRecords.length == 0) return false;
             let formatForAPNT=[];
             if(formatType=="amiConcatNotes"){
@@ -290,6 +291,8 @@ exports.plugin = {
         var knackBehaviorSelection = (formType) => {
             switch (formType) {
                 case "Asset_maintenance_form": return updateMaintenance;
+                case "Create_jobs_form": return createJob;
+                case "Create_issues_form": return takeIssues;                
             }
             return false;
         };
@@ -323,7 +326,98 @@ exports.plugin = {
         //*********************** */
         //knackBehavior Functions
         //*********************** */
-       
+
+        var createJob = async (formPayload, formData, formType) => {
+            //console.log(formData);
+            let knacksend = {
+                method: 'POST',
+                uri: knackBaseUrl+'scenes/scene_88/views/view_164/records/',
+                form: {
+                    field_93: formData.assetSelect,
+                    field_194: formData.description,
+                }
+            };       
+            try {
+                var res = await sendKnackViewRequest(knacksend);
+                var jsonRes = JSON.parse( res.replace(/\r?\n|\r/g, "."))
+                //console.log(jsonRes.record.id);
+
+            } catch (e) {
+                console.log(e);
+            }  
+            takeIssues(jsonRes.record.id,formData)
+            updateAPNTdataSource("Asset_maintenance_form");            
+        }
+
+        var takeIssues2 = async (formData) => {
+            console.log("issues");            
+            if(formData.countNewIssues > 1){                    
+                for (var i = 0 ; i < formData.countNewIssues ; i++){                        
+                    createIssues2(formData,formData.newIssue[i]);
+                }                    
+            }else if(formData.countNewIssues == 1){
+                createIssues2(formData,formData.newIssue);
+            }            
+        }
+
+        var createIssues2 = async (formData,partialData) => {
+            console.log(partialData);
+            let knacksend = {
+                method: 'POST',
+                uri: knackBaseUrl+'scenes/scene_95/views/view_182/records/',
+                form: {                    
+                    "field_254": formData.assetDb,//asset
+                    "field_161": formData.assetSelected, //Assetjob                         
+                    "field_162": partialData.issueDescription, // description 
+                    "field_163": partialData.status, // status
+                    "field_165": formData.staffId, //asigned to  
+                    "field_252": partialData.workDoneNI,//work done
+                    "field_253": partialData.commentsNI,//comments
+                    "field_164": partialData.resolvedStatusNI
+                }
+            };       
+            try {            
+                await sendKnackViewRequest(knacksend);                
+            } catch (e) {
+                console.log(e);
+            }              
+           
+            updateAPNTdataSource("Asset_Issues_Update"); 
+        }
+
+
+        var takeIssues = async (jobID, formData) => {
+            
+            if(formData.countIssues > 1){                    
+                for (var i = 0 ; i < formData.countIssues ; i++){                        
+                    createIssues(formData,formData.issues[i],jobID);
+                }                    
+            }else if(formData.countIssues == 1){
+                createIssues(formData,formData.issues,jobID);
+            }            
+        }
+
+        var createIssues = async (formData,partialData,jobID) => {
+            console.log(partialData);
+            let knacksend = {
+                method: 'POST',
+                uri: knackBaseUrl+'scenes/scene_95/views/view_182/records/',
+                form: {                    
+                    "field_254": formData.assetSelect,//asset
+                    "field_161": jobID, //Assetjob                         
+                    "field_162": partialData.issueDescription, // description 
+                    "field_163": partialData.status, // status
+                    "field_165": partialData.asignedTo //asigned to  
+                }
+            };       
+            try {
+                await sendKnackViewRequest(knacksend);                
+            } catch (e) {
+                console.log(e);
+            }              
+           
+            updateAPNTdataSource("Asset_Issues_Update"); 
+        }
         var updateMaintenance = async (formPayload, formData, formType) => {
             let knackRecordsAssetRecords = await Knack.getAllRecords(1,[],KNACK_OBJECTS_IDS.AssetsJobs);
             //console.log(staffID)    
@@ -338,12 +432,18 @@ exports.plugin = {
                     "field_241": formData.staffId
                 }
                 createMaintenance("", formData,"");                
-            }else{      
+            }else{     
+
+                takeIssues2(formData);    
                 updateAPNTdataSource("Asset_maintenance_form");          
                 updateMaintenancehours("", formData,"");    
-                updateAssets("", formData,"");              
+                updateAssets("", formData,"");  
+                
+                                              
+               
+                
                 if(formData.CountParts > 1){                    
-                    for (var i = 0 ; i < formData.partsUsedTable.length ; i++){                        
+                    for (var i = 0 ; i < formData.CountParts ; i++){                        
                         createMaintenancePart(formData,formData.partsUsedTable[i]);
                     }                    
                 }else if(formData.CountParts == 1){
@@ -583,5 +683,6 @@ exports.plugin = {
             }
         });
 
+        
     }
 };
