@@ -334,7 +334,7 @@ exports.plugin = {
                 uri: knackBaseUrl+'scenes/scene_88/views/view_164/records/',
                 form: {
                     field_93: formData.assetSelect,
-                    field_194: formData.description,
+                    //field_194: formData.description,
                 }
             };       
             try {
@@ -387,7 +387,8 @@ exports.plugin = {
 
 
         var takeIssues = async (jobID, formData) => {
-            
+            createIssues(formData,formData,jobID)
+            /*
             if(formData.countIssues > 1){                    
                 for (var i = 0 ; i < formData.countIssues ; i++){                        
                     createIssues(formData,formData.issues[i],jobID);
@@ -395,6 +396,7 @@ exports.plugin = {
             }else if(formData.countIssues == 1){
                 createIssues(formData,formData.issues,jobID);
             }            
+            */
         }
 
         var createIssues = async (formData,partialData,jobID) => {
@@ -407,7 +409,7 @@ exports.plugin = {
                     "field_161": jobID, //Assetjob                         
                     "field_162": partialData.issueDescription, // description 
                     "field_163": partialData.status, // status
-                    "field_165": partialData.asignedTo //asigned to  
+                    //"field_165": partialData.asignedTo //asigned to  
                 }
             };       
             try {
